@@ -18,11 +18,11 @@ dashboardHeight = 20
 offset = 100
 tileSize = 15
 maxTileHoriz = 27
-pacmanInitialPos = (13,23)
+pacmanInitialPos = (1,1)
 pacmanInitialLives = 3
 pacmanInitialDir = East
 ghostInitialDir = East
-window = InWindow "Pacman" (width, height) (offset, offset)
+window = InWindow "Snake" (width, height) (offset, offset)
 background = black
 
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
