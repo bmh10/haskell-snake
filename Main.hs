@@ -140,7 +140,7 @@ update secs game
  | (paused game)               = game
  | (gameState game) /= Playing = game
  | (countdownTimer game) > 0   = onTick game True 4 (decrementCountdown $ updateSeconds game) (updateSeconds $ game)
- | otherwise                   = updateScore $ updateLives $ updateGhosts 3 $ updateLives $ updatePacman $ updateSeconds game
+ | otherwise                   = updateScore $ updatePacman $ updateSeconds game
 
 updateSeconds :: PacmanGame -> PacmanGame
 updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTimer game) + 1}
@@ -151,7 +151,7 @@ decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
 updateScore :: PacmanGame -> PacmanGame
 updateScore g
   | tile == '.'      = setBlankTile $ g { score = s + 10 }
-  | tile == 'o'      = setGhostsScared $ setBlankTile $ g { score = s + 50 }
+  | tile == 'o'      = setBlankTile $ g { score = s + 50 }
   | otherwise        = g
   where
     (x, y) = pacmanPos g
@@ -199,7 +199,7 @@ resetGameFully :: PacmanGame -> PacmanGame
 resetGameFully g = resetGame $ g {gameState = Playing, lives = pacmanInitialLives, score = 0, level = (initialLevel g)}
 
 initTiles = do 
-  contents <- readFile "pacman.lvl"
+  contents <- readFile "snake.lvl"
   stdGen <- newStdGen
   let rows = words contents
   let initialState = Game { level = rows, initialLevel = rows, pacmanPos = pacmanInitialPos, pacmanDir = pacmanInitialDir, score = 0, seconds = 0, lives = pacmanInitialLives, pacmanNextDir = None, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
