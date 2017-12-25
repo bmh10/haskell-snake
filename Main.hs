@@ -75,12 +75,13 @@ setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 
 -- Rendering
 render :: SnakeGame -> Picture 
-render g = pictures [renderLevel g, 
+render g = pictures [renderSnake g,
+                     renderLevel g, 
                      renderDashboard g,
                      renderMessage g]
 
 renderSnake :: SnakeGame -> Picture
-renderSnake g = color green $ renderTile '+' x y
+renderSnake g = renderTile 's' x y
   where (x, y) = snakePos g
  
 renderDashboard :: SnakeGame -> Picture
@@ -115,6 +116,7 @@ renderLine (t:ts) x y  = pictures [renderTile t x y, renderLine ts (x+1) y]
 renderTile :: Char -> Int -> Int -> Picture
 renderTile c x y
  | c == 'x'  = translate x' y' $ color blue $ rectangleSolid (tileSize-1) (tileSize-1)
+ | c == 's'  = translate x' y' $ color green $ rectangleSolid (tileSize-1) (tileSize-1)
  | c == '+'  = translate x' y' $ color white $ rectangleSolid (tileSize-1) 2
  | c == '.'  = translate x' y' $ color yellow $ circleSolid 2
  | c == 'o'  = translate x' y' $ color yellow $ circleSolid 4
