@@ -136,11 +136,8 @@ handleKeys _ game
  | otherwise = game
 
 setSnakeDir :: Direction -> SnakeGame -> SnakeGame
-setSnakeDir dir g
- | (snakeDir g) == oppositeDir dir = g { snakeDir = dir } 
- | otherwise                        = g
+setSnakeDir dir g = g { snakeDir = dir } 
 
--- Have to update lives twice to prevent missed collision
 update :: Float -> SnakeGame -> SnakeGame
 update secs game
  | (paused game)               = game
@@ -171,7 +168,7 @@ updateSnake g = updateSnakePos g
 updateSnakePos :: SnakeGame -> SnakeGame
 updateSnakePos g
  | canMove (x, y) dir g     = g { snakePos = (move (x, y) dir) }
- | otherwise                = g
+ | otherwise                = g { gameState = Lost }
   where
     dir = snakeDir g
     (x, y) = snakePos g
@@ -188,7 +185,7 @@ canMove _ None _ = False
 canMove (x, y) dir g = canMoveTo g dir $ move (x, y) dir
 
 canMoveTo :: SnakeGame -> Direction -> (Int, Int) -> Bool
-canMoveTo g dir (x, y) = getTile x y g /= 'x' && not (getTile x y g == '+' && dir == South)
+canMoveTo g dir (x, y) = getTile x y g /= 'x'
 
 wrapx :: Int -> Int
 wrapx x
