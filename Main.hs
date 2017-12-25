@@ -19,6 +19,7 @@ offset = 100
 tileSize = 15
 maxTileHoriz = 27
 snakeInitialPos = (5,5)
+snakeInitialTiles = [(5,5), (4,5)]
 snakeInitialLives = 3
 snakeInitialDir = East
 ghostInitialDir = East
@@ -44,7 +45,7 @@ data SnakeGame = Game
     initialLevel :: [String],    -- Initial level layout
     snakePos :: (Int, Int),      -- Tile coord of snake
     snakeDir :: Direction,       -- Snake's direction of travel
-    --snakeTiles :: [(Int, Int)],
+    snakeTiles :: [(Int, Int)],
     score :: Int,                -- Current score 
     lives :: Int,                -- Current lives
     seconds :: Float,            -- Game timer
@@ -81,8 +82,11 @@ render g = pictures [renderSnake g,
                      renderMessage g]
 
 renderSnake :: SnakeGame -> Picture
-renderSnake g = renderTile 's' x y
-  where (x, y) = snakePos g
+renderSnake g = pictures $ renderSnakeTiles (snakeTiles g)
+
+renderSnakeTiles :: [(Int, Int)] -> [Picture]
+renderSnakeTiles [] = []
+renderSnakeTiles ((x,y):xs) = renderTile 's' x y : renderSnakeTiles xs
  
 renderDashboard :: SnakeGame -> Picture
 renderDashboard g = pictures $ [scorePic, livesTxt] ++ livesPic
@@ -194,7 +198,7 @@ wrapx x
  | otherwise = x
 
 resetGame :: SnakeGame -> SnakeGame
-resetGame g = g { snakePos = snakeInitialPos, snakeDir = snakeInitialDir, seconds = 0, scaredTimer = 0, countdownTimer = 3}
+resetGame g = g { snakePos = snakeInitialPos, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, seconds = 0, scaredTimer = 0, countdownTimer = 3}
 
 resetGameFully :: SnakeGame -> SnakeGame
 resetGameFully g = resetGame $ g {gameState = Playing, lives = snakeInitialLives, score = 0, level = (initialLevel g)}
@@ -203,7 +207,7 @@ initTiles = do
   contents <- readFile "snake.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, snakePos = snakeInitialPos, snakeDir = snakeInitialDir, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let initialState = Game { level = rows, initialLevel = rows, snakePos = snakeInitialPos, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
