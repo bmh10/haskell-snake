@@ -18,9 +18,9 @@ dashboardHeight = 20
 offset = 100
 tileSize = 15
 maxTileHoriz = 27
-pacmanInitialPos = (1,1)
-pacmanInitialLives = 3
-pacmanInitialDir = East
+snakeInitialPos = (5,5)
+snakeInitialLives = 3
+snakeInitialDir = East
 ghostInitialDir = East
 window = InWindow "Snake" (width, height) (offset, offset)
 background = black
@@ -38,13 +38,13 @@ oppositeDir None  = None
 randomDir :: StdGen -> (Direction, StdGen)
 randomDir g = (toEnum $ r, g') where (r, g') = randomR (0,3) g
 
-data PacmanGame = Game
+data SnakeGame = Game
   { 
     level :: [String],           -- Updated level layout
     initialLevel :: [String],    -- Initial level layout
-    pacmanPos :: (Int, Int),     -- Tile coord of pacman
-    pacmanDir :: Direction,      -- Pacman's direction of travel
-    pacmanNextDir :: Direction,  -- Buffered next direction
+    snakePos :: (Int, Int),      -- Tile coord of snake
+    snakeDir :: Direction,       -- Snake's direction of travel
+    --snakeTiles :: [(Int, Int)],
     score :: Int,                -- Current score 
     lives :: Int,                -- Current lives
     seconds :: Float,            -- Game timer
@@ -52,18 +52,18 @@ data PacmanGame = Game
     scaredTimer :: Int,          -- Scared ghost timer
     paused :: Bool,              -- Paused or not
     countdownTimer :: Int,       -- Start of game timer
-    gameState :: GameState      -- State of the game
+    gameState :: GameState       -- State of the game
   } deriving Show 
 
 -- Tile functions
-getTile :: Int -> Int -> PacmanGame -> Char
+getTile :: Int -> Int -> SnakeGame -> Char
 getTile x y g = (level g) !! y !! x
 
-setTile :: Int -> Int -> Char -> PacmanGame -> PacmanGame
+setTile :: Int -> Int -> Char -> SnakeGame -> SnakeGame
 setTile x y c g = g {level = updatedLevel}
   where updatedLevel = setAtIdx y (setAtIdx x c ((level g) !! y)) (level g)
 
-onTick :: PacmanGame -> Bool -> Int -> a -> a -> a 
+onTick :: SnakeGame -> Bool -> Int -> a -> a -> a 
 onTick g c t a b = if (c && (mod (round (seconds g)) t) == 0) then a else b
 
 -- Map tile coords ((0,0) is top-left tile) to actual screen coords ((0, 0) is center of screen)
@@ -74,12 +74,16 @@ setAtIdx :: Int -> a -> [a] -> [a]
 setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 
 -- Rendering
-render :: PacmanGame -> Picture 
+render :: SnakeGame -> Picture 
 render g = pictures [renderLevel g, 
                      renderDashboard g,
                      renderMessage g]
 
-renderDashboard :: PacmanGame -> Picture
+renderSnake :: SnakeGame -> Picture
+renderSnake g = color green $ renderTile '+' x y
+  where (x, y) = snakePos g
+ 
+renderDashboard :: SnakeGame -> Picture
 renderDashboard g = pictures $ [scorePic, livesTxt] ++ livesPic
   where
     scorePic = color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "Score: " ++ (show $ score g)
@@ -88,16 +92,16 @@ renderDashboard g = pictures $ [scorePic, livesTxt] ++ livesPic
 
     genLivesPic :: Int -> [Picture]
     genLivesPic 0 = [blank]
-    genLivesPic n = (translate (50 + fromIntegral n*tileSize) (-fromIntegral height/2 + 10) $ GG.png "img/pacmanEast2.png") : genLivesPic (n-1)
+    genLivesPic n = (translate (50 + fromIntegral n*tileSize) (-fromIntegral height/2 + 10) $ GG.png "img/snakeEast2.png") : genLivesPic (n-1)
 
-renderMessage :: PacmanGame -> Picture
+renderMessage :: SnakeGame -> Picture
 renderMessage g = pictures [countdownPic, statusMsg]
   where 
     countdownPic = if (countdownTimer g) > 0 then color white $ translate 0 10 $ scale 0.3 0.3 $ text $ show $ countdownTimer g else blank
     statusMsg    = if (gameState g) /= Playing then color white $ translate (-100) 10 $ scale 0.3 0.3 $ text msg else blank
     msg          = if (gameState g) == Won then "You won" else "Game Over"
 
-renderLevel :: PacmanGame -> Picture
+renderLevel :: SnakeGame -> Picture
 renderLevel game = renderLines (level game) 0
 
 renderLines :: [String] -> Int -> Picture
@@ -119,58 +123,56 @@ renderTile c x y
     (x', y') = tileToCoord (x, y)
 
 -- Event handling
-handleKeys :: Event -> PacmanGame -> PacmanGame
-handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = setPacmanDir East g
-handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = setPacmanDir West g
-handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setPacmanDir North g
-handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = setPacmanDir South g
+handleKeys :: Event -> SnakeGame -> SnakeGame
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = setSnakeDir East g
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = setSnakeDir West g
+handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setSnakeDir North g
+handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = setSnakeDir South g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys _ game
  | (gameState game) /= Playing = resetGameFully game
  | otherwise = game
 
-setPacmanDir :: Direction -> PacmanGame -> PacmanGame
-setPacmanDir dir g
- | (pacmanDir g) == oppositeDir dir = g { pacmanDir = dir, pacmanNextDir = None } 
- | otherwise                        = g { pacmanNextDir = dir }
+setSnakeDir :: Direction -> SnakeGame -> SnakeGame
+setSnakeDir dir g
+ | (snakeDir g) == oppositeDir dir = g { snakeDir = dir } 
+ | otherwise                        = g
 
 -- Have to update lives twice to prevent missed collision
-update :: Float -> PacmanGame -> PacmanGame
+update :: Float -> SnakeGame -> SnakeGame
 update secs game
  | (paused game)               = game
  | (gameState game) /= Playing = game
  | (countdownTimer game) > 0   = onTick game True 4 (decrementCountdown $ updateSeconds game) (updateSeconds $ game)
- | otherwise                   = updateScore $ updatePacman $ updateSeconds game
+ | otherwise                   = updateScore $ updateSnake $ updateSeconds game
 
-updateSeconds :: PacmanGame -> PacmanGame
+updateSeconds :: SnakeGame -> SnakeGame
 updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTimer game) + 1}
 
-decrementCountdown :: PacmanGame -> PacmanGame
+decrementCountdown :: SnakeGame -> SnakeGame
 decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
 
-updateScore :: PacmanGame -> PacmanGame
+updateScore :: SnakeGame -> SnakeGame
 updateScore g
   | tile == '.'      = setBlankTile $ g { score = s + 10 }
   | tile == 'o'      = setBlankTile $ g { score = s + 50 }
   | otherwise        = g
   where
-    (x, y) = pacmanPos g
+    (x, y) = snakePos g
     s = score g
     tile = getTile x y g
     setBlankTile = setTile x y '_'
 
-updatePacman :: PacmanGame -> PacmanGame
-updatePacman g = updatePacmanPos g
+updateSnake :: SnakeGame -> SnakeGame
+updateSnake g = updateSnakePos g
 
-updatePacmanPos :: PacmanGame -> PacmanGame
-updatePacmanPos g
- | canMove (x, y) nextDir g = g { pacmanPos = (move (x, y) nextDir), pacmanDir = nextDir, pacmanNextDir = None }
- | canMove (x, y) dir g     = g { pacmanPos = (move (x, y) dir) }
+updateSnakePos :: SnakeGame -> SnakeGame
+updateSnakePos g
+ | canMove (x, y) dir g     = g { snakePos = (move (x, y) dir) }
  | otherwise                = g
   where
-    dir = pacmanDir g
-    nextDir = pacmanNextDir g
-    (x, y) = pacmanPos g
+    dir = snakeDir g
+    (x, y) = snakePos g
 
 move :: (Int, Int) -> Direction -> (Int, Int)
 move (x, y) None = (x, y)
@@ -179,11 +181,11 @@ move (x, y) West = (wrapx $ x-1, y)
 move (x, y) North = (x, y-1)
 move (x, y) South = (x, y+1)
 
-canMove ::  (Int, Int) -> Direction -> PacmanGame -> Bool
+canMove ::  (Int, Int) -> Direction -> SnakeGame -> Bool
 canMove _ None _ = False
 canMove (x, y) dir g = canMoveTo g dir $ move (x, y) dir
 
-canMoveTo :: PacmanGame -> Direction -> (Int, Int) -> Bool
+canMoveTo :: SnakeGame -> Direction -> (Int, Int) -> Bool
 canMoveTo g dir (x, y) = getTile x y g /= 'x' && not (getTile x y g == '+' && dir == South)
 
 wrapx :: Int -> Int
@@ -192,17 +194,17 @@ wrapx x
  | x > maxTileHoriz = 0
  | otherwise = x
 
-resetGame :: PacmanGame -> PacmanGame
-resetGame g = g { pacmanPos = pacmanInitialPos, pacmanDir = pacmanInitialDir, seconds = 0, pacmanNextDir = None, scaredTimer = 0, countdownTimer = 3}
+resetGame :: SnakeGame -> SnakeGame
+resetGame g = g { snakePos = snakeInitialPos, snakeDir = snakeInitialDir, seconds = 0, scaredTimer = 0, countdownTimer = 3}
 
-resetGameFully :: PacmanGame -> PacmanGame
-resetGameFully g = resetGame $ g {gameState = Playing, lives = pacmanInitialLives, score = 0, level = (initialLevel g)}
+resetGameFully :: SnakeGame -> SnakeGame
+resetGameFully g = resetGame $ g {gameState = Playing, lives = snakeInitialLives, score = 0, level = (initialLevel g)}
 
 initTiles = do 
   contents <- readFile "snake.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, pacmanPos = pacmanInitialPos, pacmanDir = pacmanInitialDir, score = 0, seconds = 0, lives = pacmanInitialLives, pacmanNextDir = None, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let initialState = Game { level = rows, initialLevel = rows, snakePos = snakeInitialPos, snakeDir = snakeInitialDir, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
