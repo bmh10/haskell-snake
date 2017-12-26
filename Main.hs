@@ -174,18 +174,11 @@ updateScore g
     setBlankTile = setTile x y '_'
 
 updateSnake :: SnakeGame -> SnakeGame
-updateSnake g = g { snakeTiles = map (f dir) (snakeTiles g) }
+updateSnake g = g { snakeTiles = updateSnakeTiles (snakeTiles g) }
   where 
     dir = snakeDir g
-    f dir pos = move pos dir 
-
---updateSnakePos :: SnakeGame -> SnakeGame
---updateSnakePos g
--- | canMove (x, y) dir g     = g { snakePos = (move (x, y) dir) }
--- | otherwise                = g { gameState = Lost }
---  where
---    dir = snakeDir g
---    (x, y) = snakePos g
+    headPos = (snakeTiles g) !! 0 
+    updateSnakeTiles ts = (move headPos dir) : init ts
 
 move :: (Int, Int) -> Direction -> (Int, Int)
 move (x, y) None = (x, y)
