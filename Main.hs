@@ -147,7 +147,14 @@ update secs game
  | (paused game)               = game
  | (gameState game) /= Playing = game
  | (countdownTimer game) > 0   = onTick game True 4 (decrementCountdown $ updateSeconds game) (updateSeconds $ game)
- | otherwise                   = updateScore $ updateSnake $ updateSeconds game
+ | otherwise                   = checkGameState $ updateScore $ updateSnake $ updateSeconds game
+
+checkGameState g
+ | collision = g { gameState = Lost }
+ | otherwise = g
+  where
+   collision = or $ map (\(x, y) -> getTile x y g == 'x') ts
+   ts = snakeTiles g
 
 updateSeconds :: SnakeGame -> SnakeGame
 updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTimer game) + 1}
