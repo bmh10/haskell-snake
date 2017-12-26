@@ -43,9 +43,9 @@ data SnakeGame = Game
   { 
     level :: [String],           -- Updated level layout
     initialLevel :: [String],    -- Initial level layout
-    snakePos :: (Int, Int),      -- Tile coord of snake
     snakeDir :: Direction,       -- Snake's direction of travel
     snakeTiles :: [(Int, Int)],
+    --foodPos :: (Int, Int),
     score :: Int,                -- Current score 
     lives :: Int,                -- Current lives
     seconds :: Float,            -- Game timer
@@ -147,7 +147,7 @@ update secs game
  | (paused game)               = game
  | (gameState game) /= Playing = game
  | (countdownTimer game) > 0   = onTick game True 4 (decrementCountdown $ updateSeconds game) (updateSeconds $ game)
- | otherwise                   = checkGameState $ updateScore $ updateSnake $ updateSeconds game
+ | otherwise                   = checkGameState $ updateSnake $ updateSeconds game
 
 checkGameState g
  | collision = g { gameState = Lost }
@@ -162,16 +162,16 @@ updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTi
 decrementCountdown :: SnakeGame -> SnakeGame
 decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
 
-updateScore :: SnakeGame -> SnakeGame
-updateScore g
-  | tile == '.'      = setBlankTile $ g { score = s + 10 }
-  | tile == 'o'      = setBlankTile $ g { score = s + 50 }
-  | otherwise        = g
-  where
-    (x, y) = snakePos g
-    s = score g
-    tile = getTile x y g
-    setBlankTile = setTile x y '_'
+--updateScore :: SnakeGame -> SnakeGame
+--updateScore g
+--  | tile == '.'      = setBlankTile $ g { score = s + 10 }
+--  | tile == 'o'      = setBlankTile $ g { score = s + 50 }
+--  | otherwise        = g
+--  where
+--    (x, y) = snakePos g
+--    s = score g
+--    tile = getTile x y g
+--    setBlankTile = setTile x y '_'
 
 updateSnake :: SnakeGame -> SnakeGame
 updateSnake g = g { snakeTiles = updateSnakeTiles (snakeTiles g) }
@@ -201,7 +201,7 @@ wrapx x
  | otherwise = x
 
 resetGame :: SnakeGame -> SnakeGame
-resetGame g = g { snakePos = snakeInitialPos, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, seconds = 0, scaredTimer = 0, countdownTimer = 3}
+resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, seconds = 0, scaredTimer = 0, countdownTimer = 3}
 
 resetGameFully :: SnakeGame -> SnakeGame
 resetGameFully g = resetGame $ g {gameState = Playing, lives = snakeInitialLives, score = 0, level = (initialLevel g)}
@@ -210,7 +210,7 @@ initTiles = do
   contents <- readFile "snake.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, snakePos = snakeInitialPos, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let initialState = Game { level = rows, initialLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
