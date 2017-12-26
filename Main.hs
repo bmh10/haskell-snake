@@ -167,7 +167,11 @@ updateScore g
     setBlankTile = setTile x y '_'
 
 updateSnake :: SnakeGame -> SnakeGame
-updateSnake g = updateSnakePos g
+updateSnake g = g { snakeTiles = map (f dir) (snakeTiles g) }
+  where 
+    dir = snakeDir g
+    f dir pos = move pos dir 
+
 
 updateSnakePos :: SnakeGame -> SnakeGame
 updateSnakePos g
