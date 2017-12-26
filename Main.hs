@@ -179,14 +179,13 @@ updateSnake g = g { snakeTiles = map (f dir) (snakeTiles g) }
     dir = snakeDir g
     f dir pos = move pos dir 
 
-
-updateSnakePos :: SnakeGame -> SnakeGame
-updateSnakePos g
- | canMove (x, y) dir g     = g { snakePos = (move (x, y) dir) }
- | otherwise                = g { gameState = Lost }
-  where
-    dir = snakeDir g
-    (x, y) = snakePos g
+--updateSnakePos :: SnakeGame -> SnakeGame
+--updateSnakePos g
+-- | canMove (x, y) dir g     = g { snakePos = (move (x, y) dir) }
+-- | otherwise                = g { gameState = Lost }
+--  where
+--    dir = snakeDir g
+--    (x, y) = snakePos g
 
 move :: (Int, Int) -> Direction -> (Int, Int)
 move (x, y) None = (x, y)
