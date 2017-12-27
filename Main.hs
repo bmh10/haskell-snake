@@ -159,14 +159,10 @@ update secs game
 
 checkGameState g
  | wallCollision = g { gameState = Lost }
- | foodCollision = g { foodPos = randomPos f }
  | otherwise = g
   where
    wallCollision = or $ map (\(x, y) -> getTile x y g == 'x') ts
-   foodCollision = headPos == f
-   f = foodPos g
    ts = snakeTiles g
-   headPos = ts !! 0
 
 updateSeconds :: SnakeGame -> SnakeGame
 updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTimer game) + 1}
@@ -186,11 +182,16 @@ decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
 --    setBlankTile = setTile x y '_'
 
 updateSnake :: SnakeGame -> SnakeGame
-updateSnake g = g { snakeTiles = updateSnakeTiles (snakeTiles g) }
+updateSnake g 
+ | foodCollision = g { foodPos = randomPos f, snakeTiles = growSnake f (snakeTiles g) }
+ | otherwise = g { snakeTiles = updateSnakeTiles (snakeTiles g) }
   where 
+    f = foodPos g
     dir = snakeDir g
     headPos = (snakeTiles g) !! 0 
+    foodCollision = (move headPos dir) == f
     updateSnakeTiles ts = (move headPos dir) : init ts
+    growSnake f ts = f : ts
 
 move :: (Int, Int) -> Direction -> (Int, Int)
 move (x, y) None = (x, y)
