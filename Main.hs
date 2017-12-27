@@ -170,21 +170,22 @@ updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTi
 
 decrementCountdown :: SnakeGame -> SnakeGame
 decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
-
---updateScore :: SnakeGame -> SnakeGame
---updateScore g
---  | tile == '.'      = setBlankTile $ g { score = s + 10 }
---  | tile == 'o'      = setBlankTile $ g { score = s + 50 }
---  | otherwise        = g
---  where
---    (x, y) = snakePos g
---    s = score g
---    tile = getTile x y g
---    setBlankTile = setTile x y '_'
-
+{-
+updateScore :: SnakeGame -> SnakeGame
+updateScore g
+  | tile == 'f'      = g { score = s + 1 }
+  | otherwise        = g
+  where
+    (x, y) = snakePos g
+    s = score g
+    tile = getTile x y g
+    setBlankTile = setTile x y '_'
+-}
 updateSnake :: SnakeGame -> SnakeGame
 updateSnake g 
- | foodCollision = g { foodPos = randomPos f, snakeTiles = growSnake f (snakeTiles g) }
+ | foodCollision = g { foodPos = randomPos f, 
+                       snakeTiles = growSnake f (snakeTiles g),
+                       score = (score g) + 1 }
  | otherwise = g { snakeTiles = updateSnakeTiles (snakeTiles g) }
   where 
     f = foodPos g
