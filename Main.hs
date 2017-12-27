@@ -21,7 +21,7 @@ maxTileHoriz = 27
 snakeInitialTiles = [(5,5), (4,5)]
 snakeInitialLives = 3
 snakeInitialDir = East
-foodInitialPos = (1,1)
+foodInitialPos = (3,3)
 ghostInitialDir = East
 window = InWindow "Snake" (width, height) (offset, offset)
 background = black
@@ -158,11 +158,15 @@ update secs game
  | otherwise                   = checkGameState $ updateSnake $ updateSeconds game
 
 checkGameState g
- | collision = g { gameState = Lost }
+ | wallCollision = g { gameState = Lost }
+ | foodCollision = g { foodPos = randomPos f }
  | otherwise = g
   where
-   collision = or $ map (\(x, y) -> getTile x y g == 'x') ts
+   wallCollision = or $ map (\(x, y) -> getTile x y g == 'x') ts
+   foodCollision = headPos == f
+   f = foodPos g
    ts = snakeTiles g
+   headPos = ts !! 0
 
 updateSeconds :: SnakeGame -> SnakeGame
 updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTimer game) + 1}
