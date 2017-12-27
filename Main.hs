@@ -18,7 +18,7 @@ dashboardHeight = 20
 offset = 100
 tileSize = 15
 maxTileHoriz = 27
-snakeInitialTiles = [(5,5), (4,5)]
+snakeInitialTiles = [(5,5), (4,5), (3,5)]
 snakeInitialLives = 3
 snakeInitialDir = East
 foodInitialPos = (3,3)
@@ -40,7 +40,7 @@ randomDir :: StdGen -> (Direction, StdGen)
 randomDir g = (toEnum $ r, g') where (r, g') = randomR (0,3) g
 
 --TODO
-randomPos (x,y) = (x+5,y+5)
+randomPos (x,y) = if (x,y) == foodInitialPos then (x+10,y+5) else foodInitialPos
 
 data SnakeGame = Game
   { 
@@ -158,10 +158,11 @@ update secs game
  | otherwise                   = checkGameState $ updateSnake $ updateSeconds game
 
 checkGameState g
- | wallCollision = g { gameState = Lost }
+ | wallCollision || selfCollision = g { gameState = Lost }
  | otherwise = g
   where
    wallCollision = or $ map (\(x, y) -> getTile x y g == 'x') ts
+   selfCollision = (length $ nub ts) /= length ts
    ts = snakeTiles g
 
 updateSeconds :: SnakeGame -> SnakeGame
