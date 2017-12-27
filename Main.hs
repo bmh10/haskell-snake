@@ -18,10 +18,10 @@ dashboardHeight = 20
 offset = 100
 tileSize = 15
 maxTileHoriz = 27
-snakeInitialPos = (5,5)
 snakeInitialTiles = [(5,5), (4,5)]
 snakeInitialLives = 3
 snakeInitialDir = East
+foodInitialPos = (1,1)
 ghostInitialDir = East
 window = InWindow "Snake" (width, height) (offset, offset)
 background = black
@@ -39,13 +39,16 @@ oppositeDir None  = None
 randomDir :: StdGen -> (Direction, StdGen)
 randomDir g = (toEnum $ r, g') where (r, g') = randomR (0,3) g
 
+--TODO
+randomPos (x,y) = (x+5,y+5)
+
 data SnakeGame = Game
   { 
     level :: [String],           -- Updated level layout
     initialLevel :: [String],    -- Initial level layout
     snakeDir :: Direction,       -- Snake's direction of travel
     snakeTiles :: [(Int, Int)],
-    --foodPos :: (Int, Int),
+    foodPos :: (Int, Int),
     score :: Int,                -- Current score 
     lives :: Int,                -- Current lives
     seconds :: Float,            -- Game timer
@@ -77,12 +80,16 @@ setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 -- Rendering
 render :: SnakeGame -> Picture 
 render g = pictures [renderSnake g,
+                     renderFood g,
                      renderLevel g, 
                      renderDashboard g,
                      renderMessage g]
 
 renderSnake :: SnakeGame -> Picture
 renderSnake g = pictures $ renderSnakeTiles (snakeTiles g)
+
+renderFood :: SnakeGame -> Picture
+renderFood g = renderTile 'f' x y where (x,y) = (foodPos g)
 
 renderSnakeTiles :: [(Int, Int)] -> [Picture]
 renderSnakeTiles [] = []
@@ -121,6 +128,7 @@ renderTile :: Char -> Int -> Int -> Picture
 renderTile c x y
  | c == 'x'  = translate x' y' $ color blue $ rectangleSolid (tileSize-1) (tileSize-1)
  | c == 's'  = translate x' y' $ color green $ rectangleSolid (tileSize-1) (tileSize-1)
+ | c == 'f'  = translate x' y' $ color red $ rectangleSolid (tileSize-1) (tileSize-1)
  | c == '+'  = translate x' y' $ color white $ rectangleSolid (tileSize-1) 2
  | c == '.'  = translate x' y' $ color yellow $ circleSolid 2
  | c == 'o'  = translate x' y' $ color yellow $ circleSolid 4
@@ -210,7 +218,7 @@ initTiles = do
   contents <- readFile "snake.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let initialState = Game { level = rows, initialLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
