@@ -28,16 +28,6 @@ background = black
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
 data GameState = Playing | Won | Lost deriving (Eq, Show) 
 
-oppositeDir :: Direction -> Direction
-oppositeDir North = South
-oppositeDir South = North
-oppositeDir East  = West
-oppositeDir West  = East
-oppositeDir None  = None
-
---randomDir :: StdGen -> (Direction, StdGen)
---randomDir g = (toEnum $ r, g') where (r, g') = randomR (0,3) g
-
 randomPos g = (x, y, g'')
   where (x, g')  = randomR (1,26) g
         (y, g'') = randomR (1,28) g'
