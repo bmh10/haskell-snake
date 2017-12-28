@@ -19,7 +19,6 @@ offset = 100
 tileSize = 15
 maxTileHoriz = 27
 snakeInitialTiles = [(5,5), (4,5), (3,5)]
-snakeInitialLives = 3
 snakeInitialDir = East
 foodInitialPos = (3,3)
 ghostInitialDir = East
@@ -50,7 +49,6 @@ data SnakeGame = Game
     snakeTiles :: [(Int, Int)],
     foodPos :: (Int, Int),
     score :: Int,                -- Current score 
-    lives :: Int,                -- Current lives
     seconds :: Float,            -- Game timer
     gen :: StdGen,               -- Random number generator
     scaredTimer :: Int,          -- Scared ghost timer
@@ -96,15 +94,9 @@ renderSnakeTiles [] = []
 renderSnakeTiles ((x,y):xs) = renderTile 's' x y : renderSnakeTiles xs
  
 renderDashboard :: SnakeGame -> Picture
-renderDashboard g = pictures $ [scorePic, livesTxt] ++ livesPic
+renderDashboard g = scorePic
   where
     scorePic = color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "Score: " ++ (show $ score g)
-    livesTxt = color white $ translate 20 (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text "Lives:"
-    livesPic = genLivesPic (lives g)
-
-    genLivesPic :: Int -> [Picture]
-    genLivesPic 0 = [blank]
-    genLivesPic n = (translate (50 + fromIntegral n*tileSize) (-fromIntegral height/2 + 10) $ GG.png "img/snakeEast2.png") : genLivesPic (n-1)
 
 renderMessage :: SnakeGame -> Picture
 renderMessage g = pictures [countdownPic, statusMsg]
@@ -170,17 +162,7 @@ updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTi
 
 decrementCountdown :: SnakeGame -> SnakeGame
 decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
-{-
-updateScore :: SnakeGame -> SnakeGame
-updateScore g
-  | tile == 'f'      = g { score = s + 1 }
-  | otherwise        = g
-  where
-    (x, y) = snakePos g
-    s = score g
-    tile = getTile x y g
-    setBlankTile = setTile x y '_'
--}
+
 updateSnake :: SnakeGame -> SnakeGame
 updateSnake g 
  | foodCollision = g { foodPos = randomPos f, 
@@ -219,13 +201,13 @@ resetGame :: SnakeGame -> SnakeGame
 resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, seconds = 0, scaredTimer = 0, countdownTimer = 3}
 
 resetGameFully :: SnakeGame -> SnakeGame
-resetGameFully g = resetGame $ g {gameState = Playing, lives = snakeInitialLives, score = 0, level = (initialLevel g)}
+resetGameFully g = resetGame $ g {gameState = Playing, score = 0, level = (initialLevel g)}
 
 initTiles = do 
   contents <- readFile "snake.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, lives = snakeInitialLives, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let initialState = Game { level = rows, initialLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
