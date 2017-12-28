@@ -96,7 +96,7 @@ renderSnakeTiles ((x,y):xs) = renderTile 's' x y : renderSnakeTiles xs
 renderDashboard :: SnakeGame -> Picture
 renderDashboard g = scorePic
   where
-    scorePic = color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "Score: " ++ (show $ score g)
+    scorePic = color white $ translate (-30) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "Score: " ++ (show $ score g)
 
 renderMessage :: SnakeGame -> Picture
 renderMessage g = pictures [countdownPic, statusMsg]
