@@ -35,11 +35,12 @@ oppositeDir East  = West
 oppositeDir West  = East
 oppositeDir None  = None
 
-randomDir :: StdGen -> (Direction, StdGen)
-randomDir g = (toEnum $ r, g') where (r, g') = randomR (0,3) g
+--randomDir :: StdGen -> (Direction, StdGen)
+--randomDir g = (toEnum $ r, g') where (r, g') = randomR (0,3) g
 
---TODO
-randomPos (x,y) = if (x,y) == foodInitialPos then (x+10,y+5) else foodInitialPos
+randomPos g = (x, y, g'')
+  where (x, g')  = randomR (1,26) g
+        (y, g'') = randomR (1,28) g'
 
 data SnakeGame = Game
   { 
@@ -165,11 +166,13 @@ decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
 
 updateSnake :: SnakeGame -> SnakeGame
 updateSnake g 
- | foodCollision = g { foodPos = randomPos f, 
+ | foodCollision = g { foodPos = (fx, fy),
+                       gen = g', 
                        snakeTiles = growSnake f (snakeTiles g),
                        score = (score g) + 1 }
  | otherwise = g { snakeTiles = updateSnakeTiles (snakeTiles g) }
-  where 
+  where
+    (fx, fy, g') = randomPos (gen g) 
     f = foodPos g
     dir = snakeDir g
     headPos = (snakeTiles g) !! 0 
@@ -198,7 +201,7 @@ wrapx x
  | otherwise = x
 
 resetGame :: SnakeGame -> SnakeGame
-resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, seconds = 0, scaredTimer = 0, countdownTimer = 3}
+resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, seconds = 0, scaredTimer = 0, countdownTimer = 3}
 
 resetGameFully :: SnakeGame -> SnakeGame
 resetGameFully g = resetGame $ g {gameState = Playing, score = 0, level = (initialLevel g)}
