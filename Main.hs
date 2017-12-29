@@ -142,6 +142,7 @@ update secs game
 
 checkGameState g
  | wallCollision || selfCollision = g { gameState = Lost }
+ | (score g) == 2 = g { gameState = Won }
  | otherwise = g
   where
    wallCollision = or $ map (\(x, y) -> getTile x y g == 'x') ts
