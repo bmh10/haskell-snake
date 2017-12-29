@@ -34,8 +34,9 @@ randomPos g = (x, y, g'')
 
 data SnakeGame = Game
   { 
-    level :: [String],           -- Updated level layout
-    initialLevel :: [String],    -- Initial level layout
+    levelIdx :: Int,
+    allLevels :: [[String]],
+    currentLevel :: [String],
     snakeDir :: Direction,       -- Snake's direction of travel
     snakeTiles :: [(Int, Int)],
     foodPos :: (Int, Int),
@@ -48,13 +49,15 @@ data SnakeGame = Game
     gameState :: GameState       -- State of the game
   } deriving Show 
 
+getLevel g = (allLevels g) !! (levelIdx g)
+
 -- Tile functions
 getTile :: Int -> Int -> SnakeGame -> Char
-getTile x y g = (level g) !! y !! x
+getTile x y g = (currentLevel g) !! y !! x
 
 setTile :: Int -> Int -> Char -> SnakeGame -> SnakeGame
-setTile x y c g = g {level = updatedLevel}
-  where updatedLevel = setAtIdx y (setAtIdx x c ((level g) !! y)) (level g)
+setTile x y c g = g { currentLevel = updatedLevel}
+  where updatedLevel = setAtIdx y (setAtIdx x c ((currentLevel g) !! y)) (currentLevel g)
 
 onTick :: SnakeGame -> Bool -> Int -> a -> a -> a 
 onTick g c t a b = if (c && (mod (round (seconds g)) t) == 0) then a else b
@@ -97,7 +100,7 @@ renderMessage g = pictures [countdownPic, statusMsg]
     msg          = if (gameState g) == Won then "You won" else "Game Over"
 
 renderLevel :: SnakeGame -> Picture
-renderLevel game = renderLines (level game) 0
+renderLevel game = renderLines (currentLevel game) 0
 
 renderLines :: [String] -> Int -> Picture
 renderLines [] _ = blank
@@ -127,6 +130,7 @@ handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setSnakeDir North g
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = setSnakeDir South g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys _ game
+ | (gameState game) == Won = g
  | (gameState game) /= Playing = resetGameFully game
  | otherwise = game
 
@@ -195,13 +199,16 @@ resetGame :: SnakeGame -> SnakeGame
 resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, seconds = 0, scaredTimer = 0, countdownTimer = 3}
 
 resetGameFully :: SnakeGame -> SnakeGame
-resetGameFully g = resetGame $ g {gameState = Playing, score = 0, level = (initialLevel g)}
+resetGameFully g = resetGame $ g {gameState = Playing, score = 0}
 
+-- TODO: refactor
 initTiles = do 
-  contents <- readFile "snake.lvl"
+  contents  <- readFile "snake.lvl"
+  contents2 <- readFile "snake2.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let rows2 = words contents2
+  let initialState = Game { levelIdx = 0, allLevels = [rows, rows2], currentLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
