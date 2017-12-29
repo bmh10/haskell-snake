@@ -130,7 +130,7 @@ handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setSnakeDir North g
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = setSnakeDir South g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys _ game
- | (gameState game) == Won = g
+ | (gameState game) == Won = nextLevel game
  | (gameState game) /= Playing = resetGameFully game
  | otherwise = game
 
@@ -194,6 +194,11 @@ wrapx x
  | x < 0 = maxTileHoriz
  | x > maxTileHoriz = 0
  | otherwise = x
+
+nextLevel g = g { levelIdx = nextIdx, currentLevel = nextLevel }
+  where
+    nextIdx = (levelIdx g) + 1
+    nextLevel = (allLevels g) !! nextIdx
 
 resetGame :: SnakeGame -> SnakeGame
 resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, seconds = 0, scaredTimer = 0, countdownTimer = 3}
