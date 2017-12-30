@@ -1,4 +1,4 @@
-haskell-pacman
+haskell-snake
 --------------
 
 ![screenshot](img/screenshot.png)
