@@ -49,7 +49,6 @@ data SnakeGame = Game
     score :: Int,                -- Current score 
     seconds :: Float,            -- Game timer
     gen :: StdGen,               -- Random number generator
-    scaredTimer :: Int,          -- Scared ghost timer
     paused :: Bool,              -- Paused or not
     countdownTimer :: Int,       -- Start of game timer
     gameState :: GameState       -- State of the game
@@ -160,7 +159,7 @@ checkGameState g
    ts = snakeTiles g
 
 updateSeconds :: SnakeGame -> SnakeGame
-updateSeconds game = game {seconds = (seconds game) + 1, scaredTimer = (scaredTimer game) + 1}
+updateSeconds game = game {seconds = (seconds game) + 1}
 
 decrementCountdown :: SnakeGame -> SnakeGame
 decrementCountdown game = game {countdownTimer = (countdownTimer game) - 1}
@@ -210,7 +209,7 @@ nextLevel g
     nextLevel = (allLevels g) !! nextIdx
 
 resetGame :: SnakeGame -> SnakeGame
-resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, seconds = 0, scaredTimer = 0, countdownTimer = 3}
+resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, seconds = 0, countdownTimer = 3}
 
 resetGameFully :: SnakeGame -> SnakeGame
 resetGameFully g = resetGame $ g {gameState = Playing, score = 0}
@@ -224,7 +223,7 @@ initTiles = do
   let rows = words contents
   let rows2 = words contents2
   let rows3 = words contents3
-  let initialState = Game { levelIdx = 0, allLevels = [rows, rows2, rows3], currentLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let initialState = Game { levelIdx = 0, allLevels = [rows, rows2, rows3], currentLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
