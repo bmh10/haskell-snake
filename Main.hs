@@ -219,10 +219,12 @@ resetGameFully g = resetGame $ g {gameState = Playing, score = 0}
 initTiles = do 
   contents  <- readFile "snake.lvl"
   contents2 <- readFile "snake2.lvl"
+  contents3 <- readFile "snake3.lvl"
   stdGen <- newStdGen
   let rows = words contents
   let rows2 = words contents2
-  let initialState = Game { levelIdx = 0, allLevels = [rows, rows2], currentLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
+  let rows3 = words contents3
+  let initialState = Game { levelIdx = 0, allLevels = [rows, rows2, rows3], currentLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing }
   print rows
   return initialState
 
