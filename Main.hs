@@ -18,7 +18,7 @@ dashboardHeight = 20
 offset = 100
 tileSize = 15
 maxTileHoriz = 27
-snakeInitialTiles = [(5,5), (4,5), (3,5)]
+snakeInitialTiles = [(5,10), (4,10), (3,10)]
 snakeInitialDir = East
 foodInitialPos = (3,3)
 ghostInitialDir = East
@@ -28,7 +28,13 @@ background = black
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
 data GameState = Playing | Won | Lost deriving (Eq, Show) 
 
-randomPos g = (x, y, g'')
+randomPos game = if getTile x y game == '_' then (x, y, g') else randomPos game
+  where
+    g = gen game 
+    (x, y, g') = randomPos' g
+        
+
+randomPos' g = (x, y, g'')
   where (x, g')  = randomR (1,26) g
         (y, g'') = randomR (1,28) g'
 
@@ -167,7 +173,7 @@ updateSnake g
                        score = (score g) + 1 }
  | otherwise = g { snakeTiles = updateSnakeTiles (snakeTiles g) }
   where
-    (fx, fy, g') = randomPos (gen g) 
+    (fx, fy, g') = randomPos g 
     f = foodPos g
     dir = snakeDir g
     headPos = (snakeTiles g) !! 0 
