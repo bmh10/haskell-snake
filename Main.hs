@@ -195,7 +195,7 @@ wrapx x
  | x > maxTileHoriz = 0
  | otherwise = x
 
-nextLevel g = g { levelIdx = nextIdx, currentLevel = nextLevel }
+nextLevel g = resetGameFully $ g { levelIdx = nextIdx, currentLevel = nextLevel }
   where
     nextIdx = (levelIdx g) + 1
     nextLevel = (allLevels g) !! nextIdx
