@@ -201,9 +201,12 @@ wrapx x
  | x > maxTileHoriz = 0
  | otherwise = x
 
-nextLevel g = resetGameFully $ g { levelIdx = nextIdx, currentLevel = nextLevel }
+nextLevel g
+ | nextIdx >= numLevels = resetGameFully g
+ | otherwise = resetGameFully $ g { levelIdx = nextIdx, currentLevel = nextLevel }
   where
     nextIdx = (levelIdx g) + 1
+    numLevels = length (allLevels g)
     nextLevel = (allLevels g) !! nextIdx
 
 resetGame :: SnakeGame -> SnakeGame
