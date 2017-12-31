@@ -214,17 +214,25 @@ resetGame g = g { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, fo
 resetGameFully :: SnakeGame -> SnakeGame
 resetGameFully g = resetGame $ g {gameState = Playing, score = 0}
 
+initLevels g = do
+  let fileNames = map (\x -> "snake" ++ show x ++ ".lvl") [1..3]
+  fileContents <- map readFile fileNames
+  let all = fmap words fileContents
+  g {allLevels = all, currentLevel = all !! 0, levelIdx = 0}
+
 -- TODO: refactor
 initTiles = do 
-  contents  <- readFile "snake.lvl"
-  contents2 <- readFile "snake2.lvl"
-  contents3 <- readFile "snake3.lvl"
+  --contents  <- readFile "snake.lvl"
+  --contents2 <- readFile "snake2.lvl"
+  --contents3 <- readFile "snake3.lvl"
   stdGen <- newStdGen
-  let rows = words contents
-  let rows2 = words contents2
-  let rows3 = words contents3
-  let initialState = Game { levelIdx = 0, allLevels = [rows, rows2, rows3], currentLevel = rows, snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, paused = False, countdownTimer = 3, gameState = Playing }
-  print rows
+  --let rows = words contents
+  --let rows2 = words contents2
+  --let rows3 = words contents3
+ 
+  let initialState = Game { snakeDir = snakeInitialDir, snakeTiles = snakeInitialTiles, foodPos = foodInitialPos, score = 0, seconds = 0, gen = stdGen, paused = False, countdownTimer = 3, gameState = Playing }
+  --print rows
+  initLevels initialState
   return initialState
 
 main = do
