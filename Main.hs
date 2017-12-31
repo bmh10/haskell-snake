@@ -21,7 +21,6 @@ maxTileHoriz = 27
 snakeInitialTiles = [(5,10), (4,10), (3,10)]
 snakeInitialDir = East
 foodInitialPos = (3,3)
-ghostInitialDir = East
 window = InWindow "Snake" (width, height) (offset, offset)
 background = black
 
