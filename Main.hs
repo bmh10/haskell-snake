@@ -12,6 +12,7 @@ import Data.List
 import Data.Maybe
 
 fps = 5
+numLevels = 4
 width = 420 -- 28 * 15
 height = 465 + dashboardHeight -- 31 * 15
 dashboardHeight = 20
@@ -214,7 +215,7 @@ resetGameFully :: SnakeGame -> SnakeGame
 resetGameFully g = resetGame $ g {gameState = Playing, score = 0}
 
 initTiles = do 
-  let fileNames = map (\x -> "snake" ++ show x ++ ".lvl") [1..3]
+  let fileNames = map (\x -> "snake" ++ show x ++ ".lvl") [1..numLevels]
   fileContents <- mapM readFile fileNames
   let all = map words fileContents
   stdGen <- newStdGen
