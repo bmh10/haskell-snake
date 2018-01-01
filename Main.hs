@@ -121,9 +121,6 @@ renderTile c x y
  | c == 'x'  = translate x' y' $ color blue $ rectangleSolid (tileSize-1) (tileSize-1)
  | c == 's'  = translate x' y' $ color green $ rectangleSolid (tileSize-1) (tileSize-1)
  | c == 'f'  = translate x' y' $ color red $ rectangleSolid (tileSize-1) (tileSize-1)
- | c == '+'  = translate x' y' $ color white $ rectangleSolid (tileSize-1) 2
- | c == '.'  = translate x' y' $ color yellow $ circleSolid 2
- | c == 'o'  = translate x' y' $ color yellow $ circleSolid 4
  | otherwise = blank
   where
     (x', y') = tileToCoord (x, y)
