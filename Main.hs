@@ -13,6 +13,7 @@ import Data.Maybe
 
 fps = 5
 numLevels = 4
+pointsPerLevel = 10
 width = 420 -- 28 * 15
 height = 465 + dashboardHeight -- 31 * 15
 dashboardHeight = 20
@@ -151,7 +152,7 @@ update secs game
 
 checkGameState g
  | wallCollision || selfCollision = g { gameState = Lost }
- | (score g) == 2 = g { gameState = Won }
+ | (score g) == pointsPerLevel = g { gameState = Won }
  | otherwise = g
   where
    wallCollision = or $ map (\(x, y) -> getTile x y g == 'x') ts
