@@ -34,7 +34,6 @@ randomPos game = if getTile x y game == '_' then (x, y, g') else randomPos game
     g = gen game 
     (x, y, g') = randomPos' g
         
-
 randomPos' g = (x, y, g'')
   where (x, g')  = randomR (1,26) g
         (y, g'') = randomR (1,28) g'
@@ -185,14 +184,6 @@ move (x, y) West = (wrapx $ x-1, y)
 move (x, y) North = (x, y-1)
 move (x, y) South = (x, y+1)
 
-canMove ::  (Int, Int) -> Direction -> SnakeGame -> Bool
-canMove _ None _ = False
-canMove (x, y) dir g = canMoveTo g dir $ move (x, y) dir
-
-canMoveTo :: SnakeGame -> Direction -> (Int, Int) -> Bool
-canMoveTo g dir (x, y) = getTile x y g /= 'x'
-
-wrapx :: Int -> Int
 wrapx x
  | x < 0 = maxTileHoriz
  | x > maxTileHoriz = 0
